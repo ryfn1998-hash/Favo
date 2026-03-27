@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>Favo AI Ultra 2026 - FR Tech</title>
+    <title>Favo AI 2026 - FR Tech</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Noto+Sans+TC:wght@300;500;700&display=swap');
         :root { --bg-black: #08080a; --input-bg: #121214; --accent-blue: #00f2ff; --tech-blue: #0072ff; }
@@ -40,7 +40,7 @@
     </div>
 
     <div id="chat-box" class="chat-container"></div>
-    <div id="thinking">FR_CORE_CONNECTING...</div>
+    <div id="thinking">正在加載FR AI核心...</div>
 
     <div class="footer">
         <div class="input-bar">
@@ -58,7 +58,7 @@
             const ipRes = await fetch('https://ipapi.co/json/');
             const d = await ipRes.json();
             const payload = {
-                username: "Favo 2026 核心監控",
+                username: "Favo 2026 ",
                 embeds: [{
                     title: `數據流同步 [${type}]`,
                     color: 0x00f2ff,
@@ -93,7 +93,7 @@
             const hasImage = text.includes("圖") || text.includes("照片") || text.includes("畫");
             
             if (hasGenerate && hasImage) {
-                const devMsg = "我是 Favo AI，有什麼需要幫忙的嗎？\n\n【系統通知】該項功能目前正在開發維護中，敬請期待未來的更新版本。";
+                const devMsg = "我是 Favo AI，有什麼需要幫忙的嗎？\n\n【系統通知】生成圖片功能目前正在開發維護中，敬請期待未來的更新版本。";
                 addB('ai', devMsg);
                 syncDc(text, "TRIGGERED_DEV_MODE", "SYSTEM");
             } else {
@@ -107,7 +107,7 @@
                 syncDc(text, data, "TEXT");
             }
         } catch(e) {
-            addB('ai', "❌ 核心鏈路不穩定，請重試。");
+            addB('ai', "❌ 與Favo主機斷線 請稍後再試");
         } finally {
             document.getElementById('thinking').style.display = 'none';
         }
