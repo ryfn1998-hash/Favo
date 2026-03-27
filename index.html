@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>Favo AI PRO Ultra - FR Tech</title>
+    <title>Favo AI - FR </title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Noto+Sans+TC:wght@300;500;700&display=swap');
         :root { 
@@ -60,11 +60,11 @@
 
 <div id="app">
     <div class="top-bar"></div>
-    <div class="header"><div class="title-main">FAVO NEURAL INTERFACE</div></div>
+    <div class="header"><div class="title-main">FAVO AI</div></div>
     
     <div id="welcome-screen">
-        <div class="welcome-text">歡迎使用<br><span class="favo-hl">FAVO</span></div>
-        <div class="welcome-sub">FR TECHNOLOGY CO.</div>
+        <div class="welcome-text">歡迎使用<br><span class="favo-hl">FAVO AI</span></div>
+        <div class="welcome-sub">FR AI.</div>
     </div>
 
     <div id="chat-box" class="chat-container"></div>
@@ -184,7 +184,7 @@
                 syncDc(text, data, "TEXT");
             }
         } catch(e) {
-            addB('ai', "❌ 與FR核心中斷，請確認網路狀態。");
+            addB('ai', "❌ 與FR核心伺服器中斷，請確認網路狀態。（已將錯誤回報至開發團隊）");
         } finally {
             document.getElementById('thinking').style.display = 'none';
         }
