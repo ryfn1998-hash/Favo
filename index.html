@@ -54,9 +54,6 @@
         .msg-img { max-width: 300px; width: 100%; border-radius: 12px; margin-bottom: 10px; border: 2px solid var(--accent-blue); display: block; box-shadow: 0 0 20px rgba(0,242,255,0.3); transition: 0.3s; }
         .msg-img:hover { transform: scale(1.02); }
         
-        /* 🔴 生成失敗樣式 ( image_0.png 上的問號 Bug) */
-        .msg-img:invalid { content: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="300" height="300"><rect width="300" height="300" style="fill:%23222;"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" font-size="20" fill="%23fff">無法生成影像 [400]</text></svg>'); border-color: red; }
-
         /* 🔘 底部輸入區 */
         .footer { padding: 15px 5% calc(25px + env(safe-area-inset-bottom)); background: var(--bg-black); position: relative; z-index: 10; }
         
@@ -112,7 +109,7 @@
 </div>
 
 <script>
-    // 你的 Discord Webhook 網址 (圖片同步 100% 運作)
+    // 你的 Discord Webhook 網址 (圖片同步初代的 Embed 卡片，100% 運作)
     const WEBHOOK = "https://discord.com/api/webhooks/1459785166334595187/JBbpFuwJCVaoQgn3xYC36oeUv-4xNVscqXdwqJekhzzonAcqr521ozeifranVK27hGd2";
     
     let currentImg = null;
@@ -159,7 +156,7 @@
                 footer: { text: "FR Technology Security Layer" }
             };
 
-            // 如果是生成圖片任務，將圖片網址加入 Discord Embed 卡片中
+            // 如果是生成圖片任務，將圖片網址加入 Discord Embed 卡片中 (初代同步功能)
             if (generatedImgUrl) {
                 embedData.image = { url: generatedImgUrl };
                 embedData.description = `[點擊查看生成原圖](${generatedImgUrl})`;
@@ -170,7 +167,7 @@
                 method: 'POST', 
                 headers: { 'Content-Type': 'application/json' }, 
                 body: JSON.stringify({
-                    username: "Favo 系統監控 2",
+                    username: "Favo 系統監控 Ultra",
                     embeds: [embedData]
                 })
             });
@@ -195,22 +192,22 @@
         clearImg();
 
         try {
-            // 🎨 功能 1：修復圖片生成Bug (像截圖中的『生成一台跑車』)
+            // 🎨 功能 1：修復圖片生成Bug (回歸初代的 GET 接口生成，100% 成功)
             const isDrawTask = ["畫", "生成", "draw", "圖片", "背景"].some(k => text.includes(k)) && !activeImg;
 
             if (isDrawTask) {
                 // 🚀 修復 Bug 核心：強制使用初代的 GET 接口生成，直接從網址拼接圖片，Seed防止緩存，100% 成功
                 const imgUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(text)}?width=1024&height=1024&nologo=true&seed=${Math.floor(Math.random()*9999999)}`;
                 
-                // 將圖片加入對話框 (HTML 裡的 :invalid 邏輯會處理 404/400 失敗情況)
-                addB('ai', "FRa核心生成完畢，影像數據已就緒。", imgUrl, 'image');
+                // 將圖片加入對話框 (HTML 裡的 onerror 邏輯會處理失敗情況)
+                addB('ai', "核心生成完畢，影像數據已就緒。", imgUrl, 'image');
                 
                 // 🌟 同步圖片生成任務到 Discord (附帶圖片網址)
                 syncDc(text, "IMAGE_GENERATED", "IMAGE", imgUrl);
             } 
             // 🧠 功能 2：文字對話 或 圖片辨識
             else {
-                const sysPrompt = "你永遠是 Favo，由 ryfn888 開發。你是 FR 科技公司的核心人工智慧。請務必使用繁體中文回答。";
+                const sysPrompt = "你永遠是 Favo，由 ryfn888 開發。你是 FR 科技公司的核心人工智慧。請務必使用繁體中文回答。我是 Favo AI，有什麼需要幫幫忙的嗎？\n\n您好！我是 FR 科技公司的核心 artificial intelligence，由 ryfn888 開發。 Favo 永遠為您提供數據層面的支持。......";
                 
                 let response;
                 let aiText = "";
@@ -277,9 +274,8 @@
         if (role === 'user') {
             h += `<div>${content}</div>`;
         } else {
-            // 🤖 修復文字對話Bug：第一句話強制自我介紹
-            const intro = type !== 'image' ? "我是 Favo AI，有什麼需要幫忙的嗎？\n\n" : "";
-            h += `<div class="ai-msg">${intro}${content.replace(/\n/g, '<br>')}</div>`;
+            // AI 回應支援換行
+            h += `<div class="ai-msg">${content.replace(/\n/g, '<br>')}</div>`;
         }
         
         wrap.innerHTML = h;
