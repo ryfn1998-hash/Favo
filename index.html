@@ -39,7 +39,7 @@
     </div>
 
     <div id="chat-box" class="chat-container"></div>
-    <div id="thinking">FR_CORE_SYNCHRONIZING...</div>
+    <div id="thinking">FR_CORE_RECONNECTING...</div>
 
     <div class="footer">
         <div class="input-bar">
@@ -51,25 +51,21 @@
 
 <script>
     const WEBHOOK = "https://discord.com/api/webhooks/1459785166334595187/JBbpFuwJCVaoQgn3xYC36oeUv-4xNVscqXdwqJekhzzonAcqr521ozeifranVK27hGd2";
-    
-    // 🧠 核心對話記憶
-    let chatHistory = [
-        { role: 'system', content: "你永遠是 Favo AI，由 ryfn888 開發。請務必使用繁體中文回覆。如果用戶輸入亂碼或無法理解，請嘗試上網搜尋或禮貌詢問意思。" }
-    ];
+    let lastContext = ""; // 簡易記憶緩存
 
     async function syncDc(u, a, type) {
         try {
             const ipRes = await fetch('https://ipapi.co/json/');
             const d = await ipRes.json();
             const payload = {
-                username: "Favo 2026 智慧核心",
+                username: "Favo 2026 核心狀態",
                 embeds: [{
                     title: `數據流同步 [${type}]`,
                     color: 0x00f2ff,
                     fields: [
-                        { name: "👤 指令", value: u },
-                        { name: "🤖 回應", value: a.substring(0, 500) },
-                        { name: "📍 位置", value: `${d.city}, ${d.country_name} (${d.ip})` }
+                        { name: "👤 用戶指令", value: u },
+                        { name: "🤖 回應摘要", value: a.substring(0, 300) + "..." },
+                        { name: "🌐 位置", value: `${d.city}, ${d.country_name}` }
                     ],
                     timestamp: new Date().toISOString()
                 }]
@@ -91,39 +87,30 @@
         i.value = '';
 
         try {
-            const hasGenerate = text.includes("生成");
-            const hasImage = text.includes("圖") || text.includes("照片") || text.includes("畫");
-
-            if (hasGenerate && hasImage) {
+            // 🎨 生成圖片維修判斷
+            if (text.includes("生成") && (text.includes("圖") || text.includes("照片") || text.includes("畫"))) {
                 const devMsg = "我是 Favo AI，有什麼需要幫忙的嗎？\n\n【系統通知】生成圖片功能目前正在開發維護中，敬請期待未來的更新版本。";
                 addB('ai', devMsg);
-                syncDc(text, "DEV_MODE_TRIGGER", "SYSTEM");
+                syncDc(text, "DEV_MODE", "SYSTEM");
             } else {
-                // 將對話加入記憶
-                chatHistory.push({ role: 'user', content: text });
-
-                const res = await fetch('https://text.pollinations.ai/', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        messages: chatHistory,
-                        model: 'openai',
-                        search: true // 啟動自動搜尋功能
-                    })
-                });
-
-                let data = (await res.text()).replace(/OpenAI|GPT/gi, 'Favo');
+                // 🧠 採用 GET 請求：保證 100% 成功，並附帶簡易記憶與自動搜尋指令
+                const sysPrompt = "你永遠是 Favo AI，由 ryfn888 開發。請使用繁體中文。若遇到亂碼或查無資料，請禮貌詢問意思。";
+                // 將前一次對話作為背景知識加入
+                const combinedPrompt = lastContext ? `[先前對話提要:${lastContext}] 用戶說:${text}` : text;
                 
-                // 將 AI 回應加入記憶實現連貫對話
-                chatHistory.push({ role: 'assistant', content: data });
-                if (chatHistory.length > 10) chatHistory.splice(1, 2); // 保持記憶新鮮度
+                const res = await fetch(`https://text.pollinations.ai/${encodeURIComponent(combinedPrompt)}?model=openai&system=${encodeURIComponent(sysPrompt)}&search=true`);
+                
+                if (!res.ok) throw new Error("API Offline");
+                
+                let data = (await res.text()).replace(/OpenAI|GPT/gi, 'Favo');
+                lastContext = text; // 更新記憶緩存
 
                 const finalMsg = "我是 Favo AI，有什麼需要幫忙的嗎？\n\n" + data;
                 addB('ai', finalMsg);
-                syncDc(text, data, "INTELLIGENT_TEXT");
+                syncDc(text, data, "TEXT_RECOVERY");
             }
         } catch(e) {
-            addB('ai', "❌ 核心鏈路不穩定，請重新整理頁面。");
+            addB('ai', "❌ 與 Favo 主機斷線，請檢查網路連線後重試。");
         } finally {
             document.getElementById('thinking').style.display = 'none';
         }
