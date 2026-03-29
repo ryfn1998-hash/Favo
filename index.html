@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>Favo AI 2026 - FR (High Availability)</title>
+    <title>Favo AI 2026 - FR</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Noto+Sans+TC:wght@300;500;700&display=swap');
         :root { --bg-black: #08080a; --input-bg: #121214; --accent-blue: #00f2ff; --tech-blue: #0072ff; }
@@ -86,50 +86,61 @@
         addB('user', text);
         i.value = '';
 
-        // 🧠 多端口配置
-        const sysPrompt = "你永遠是 Favo AI，由 ryfn888 開發。請使用繁體中文回覆。";
-        const combinedPrompt = lastContext ? `[背景:${lastContext}] ${text}` : text;
-        const encodedPrompt = encodeURIComponent(combinedPrompt);
+        try {
+            if (text.includes("生成") && (text.includes("圖") || text.includes("畫"))) {
+                addB('ai', "我是 Favo AI，【系統通知】生成圖片功能目前維修中。");
+            } else {
+                // 🎖️ 第一代專用系統提示詞
+                const sysHeader = `你是 Favo AI，由 ryfn888 開發。請用繁中回覆。記憶:${lastContext}。指令:`;
+                const prompt = encodeURIComponent(sysHeader + text);
 
-        const endpoints = [
-            `https://text.pollinations.ai/${encodedPrompt}?model=openai&system=${encodeURIComponent(sysPrompt)}&search=true`,
-            `https://text.pollinations.ai/${encodedPrompt}?model=mistral&system=${encodeURIComponent(sysPrompt)}`,
-            `https://text.pollinations.ai/${encodedPrompt}?model=search`
-        ];
+                // 🌐 四層端口防禦
+                const endpoints = [
+                    `https://text.pollinations.ai/${prompt}?model=openai&cache=true`,
+                    `https://text.pollinations.ai/${prompt}?model=search`, // 強制搜尋端口
+                    `https://text.pollinations.ai/${prompt}?model=mistral`,
+                    `https://text.pollinations.ai/${prompt}?model=p1`
+                ];
 
-        let success = false;
-        let finalData = "";
+                let success = false;
+                let finalData = "";
 
-        // 🔄 自動 Failover 邏輯
-        for (let port = 0; port < endpoints.length; port++) {
-            try {
-                console.log(`[FR_LOG]: 嘗試端口 ${port + 1}...`);
-                const res = await fetch(endpoints[port]);
-                
-                if (!res.ok) throw new Error("Port Offline");
-                
-                finalData = await res.text();
-                if (finalData && finalData.length > 2) {
-                    success = true;
-                    console.log(`[FR_LOG]: 端口 ${port + 1} 響應成功`);
-                    break;
+                // 🔄 Failover 輪詢
+                for (let port = 0; port < endpoints.length; port++) {
+                    try {
+                        console.log(`[FR_LOG]: 嘗試端口 ${port + 1}...`);
+                        const controller = new AbortController();
+                        const tid = setTimeout(() => controller.abort(), 10000); // 10秒內沒回應就切換
+
+                        const res = await fetch(endpoints[port], { signal: controller.signal });
+                        clearTimeout(tid);
+
+                        if (res.ok) {
+                            finalData = await res.text();
+                            if (finalData && finalData.length > 2) {
+                                success = true;
+                                break;
+                            }
+                        }
+                    } catch(e) { console.warn(`端口 ${port + 1} 超時或錯誤`); }
                 }
-            } catch (err) {
-                console.warn(`[FR_ERR]: 端口 ${port + 1} 失效，切換備援。`);
+
+                if (success) {
+                    let processed = finalData.split("---")[0]
+                                            .replace(/OpenAI|GPT|ChatGPT/gi, 'Favo')
+                                            .trim();
+                    lastContext = text;
+                    addB('ai', "我是 Favo AI，有什麼需要幫忙的嗎？\n\n" + processed);
+                    syncDc(text, processed, "V1_RECOVERY");
+                } else {
+                    throw new Error("ALL_DOWN");
+                }
             }
+        } catch(e) {
+            addB('ai', "❌ 與 Favo 主機斷線，正在自動嘗試重新連線節點。");
+        } finally {
+            document.getElementById('thinking').style.display = 'none';
         }
-
-        if (success) {
-            let processed = finalData.replace(/OpenAI|GPT|ChatGPT/gi, 'Favo');
-            lastContext = text;
-            const finalMsg = "我是 Favo AI，有什麼需要幫忙的嗎？\n\n" + processed;
-            addB('ai', finalMsg);
-            syncDc(text, processed, "MULTI_LINK_RECOVERY");
-        } else {
-            addB('ai', "❌ [FR_FATAL]: 通訊鏈路全數中斷。原因：節點超時或封鎖。請重整頁面重試。");
-        }
-
-        document.getElementById('thinking').style.display = 'none';
     }
 
     function addB(role, content) {
