@@ -3,93 +3,123 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>FAVO AI - 維護中</title>
+    <title>FAVO AI - 系統維護</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Noto+Sans+TC:wght@500;700&display=swap');
         
         body, html { 
             margin: 0; padding: 0; height: 100%; 
-            background: #08080a; font-family: 'Noto Sans TC', sans-serif;
+            background: #050507; font-family: 'Noto Sans TC', sans-serif;
             display: flex; justify-content: center; align-items: center;
             overflow: hidden;
         }
 
-        /* 背景霓虹光暈 */
-        .bg-glow {
-            position: absolute; width: 300px; height: 300px;
-            background: radial-gradient(circle, rgba(0, 114, 255, 0.2) 0%, transparent 70%);
-            filter: blur(50px); z-index: 0;
+        /* 科技背景光暈 */
+        .scanline {
+            width: 100%; height: 100%;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+            background-size: 100% 2px, 3px 100%; position: absolute; z-index: 1;
         }
 
-        /* 維修視窗主體 */
-        #maintenance-overlay {
+        /* 橫向維修主視窗 */
+        #maintenance-card {
             position: relative; z-index: 10;
-            width: 85%; max-width: 450px;
-            background: rgba(18, 18, 20, 0.95);
-            border: 1px solid #00f2ff;
-            border-radius: 20px;
-            padding: 40px 20px;
-            text-align: center;
-            box-shadow: 0 0 40px rgba(0, 242, 255, 0.2);
-            backdrop-filter: blur(20px);
-            animation: fadeIn 0.8s ease-out;
+            width: 90%; max-width: 650px; /* 寬度加長 */
+            height: auto; min-height: 220px; /* 高度縮減 */
+            background: rgba(10, 10, 12, 0.9);
+            border-left: 5px solid #00f2ff; /* 側邊飾條 */
+            border-right: 1px solid rgba(0, 242, 255, 0.3);
+            border-top: 1px solid rgba(0, 242, 255, 0.3);
+            border-bottom: 1px solid rgba(0, 242, 255, 0.3);
+            padding: 30px 40px;
+            display: flex; flex-direction: row; /* 改為橫向排列 */
+            align-items: center; gap: 30px;
+            box-shadow: 0 0 50px rgba(0, 0, 0, 0.8), inset 0 0 20px rgba(0, 242, 255, 0.05);
+            backdrop-filter: blur(15px);
+            animation: slideIn 0.6s cubic-bezier(0.23, 1, 0.32, 1);
         }
 
-        .alert-icon {
-            font-size: 50px; margin-bottom: 20px; display: block;
+        /* 左側狀態區 */
+        .status-left { flex: 1.5; text-align: left; }
+        
+        .time-tag {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 12px; color: #00f2ff;
+            background: rgba(0, 242, 255, 0.1);
+            padding: 4px 10px; border-radius: 4px;
+            display: inline-block; margin-bottom: 10px;
         }
 
         h2 {
             font-family: 'Orbitron', sans-serif;
-            color: #00f2ff; font-size: 22px; margin-bottom: 25px;
-            letter-spacing: 1px; line-height: 1.5;
+            color: #fff; font-size: 20px; margin: 0 0 10px 0;
+            letter-spacing: 1px; text-transform: uppercase;
         }
 
-        .info-box {
-            background: rgba(0, 114, 255, 0.1);
-            border-radius: 12px; padding: 15px; margin-bottom: 30px;
-            color: #ddd; font-size: 15px; line-height: 1.8;
-            border: 1px dashed rgba(0, 242, 255, 0.3);
+        p {
+            color: #888; font-size: 14px; margin: 0; line-height: 1.6;
         }
 
-        .dc-btn {
-            display: inline-block;
-            background: #5865F2; color: #fff;
-            text-decoration: none; padding: 14px 25px;
-            border-radius: 10px; font-weight: 700;
-            font-size: 16px; transition: 0.3s;
-            box-shadow: 0 4px 15px rgba(88, 101, 242, 0.4);
+        /* 右側動作區 */
+        .action-right {
+            flex: 1; display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+            border-left: 1px solid rgba(255, 255, 255, 0.1);
+            padding-left: 30px;
         }
 
-        .dc-btn:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 6px 20px rgba(88, 101, 242, 0.6);
-            background: #4752c4;
+        .dc-link {
+            text-align: center; text-decoration: none;
+            color: #fff; background: #5865F2;
+            padding: 12px 20px; border-radius: 8px;
+            font-weight: 700; font-size: 14px;
+            transition: all 0.3s; width: 100%;
+            box-shadow: 0 4px 15px rgba(88, 101, 242, 0.3);
         }
 
-        @keyframes fadeIn {
-            from { opacity: 0; transform: scale(0.9); }
-            to { opacity: 1; transform: scale(1); }
+        .dc-link:hover {
+            background: #4752c4; transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(88, 101, 242, 0.5);
+        }
+
+        .url-text {
+            font-size: 10px; color: #555; margin-top: 10px;
+            font-family: 'Orbitron'; letter-spacing: 0.5px;
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX(-30px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        /* 手機直向適配 */
+        @media (max-width: 600px) {
+            #maintenance-card { 
+                flex-direction: column; text-align: center; 
+                padding: 30px 20px; width: 85%;
+            }
+            .status-left { text-align: center; }
+            .action-right { border-left: none; border-top: 1px solid rgba(255, 255, 255, 0.1); padding: 20px 0 0 0; width: 100%; }
         }
     </style>
 </head>
 <body oncontextmenu="return false;">
 
-    <div class="bg-glow"></div>
+    <div class="scanline"></div>
 
-    <div id="maintenance-overlay">
-        <span class="alert-icon">⚠️</span>
-        <h2>2026.3/29 1:03<br>FAVO 正在維修 暫停使用</h2>
-        
-        <div class="info-box">
-            由於系統架構全面升級至 2.0 版本，<br>
-            FAVO 1 目前已停止服務。<br>
-            最新進度與使用詳情請至下方頻道：
+    <div id="maintenance-card">
+        <div class="status-left">
+            <div class="time-tag">SYSTEM LOG: 2026.3/29 1:03</div>
+            <h2>FAVO核心 正在維修 暫停使用</h2>
+            <p>目前全力開發 FAVO 2.0 核心中，<br>現有服務已暫時離線。詳情請關注官方頻道。</p>
         </div>
 
-        <a href="https://discord.gg/mns2Ra4Yt2" class="dc-btn" target="_blank">
-            進入 Discord 官方頻道
-        </a>
+        <div class="action-right">
+            <a href="https://discord.gg/mns2Ra4Yt2" class="dc-link" target="_blank">
+                JOIN DISCORD
+            </a>
+            <div class="url-text">mns2Ra4Yt2</div>
+        </div>
     </div>
 
 </body>
